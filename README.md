@@ -20,78 +20,60 @@ A lightweight web application that allows Medelite directors to instantly look u
 
 | Requirement | Status |
 |---|---|
-| Dynamic CCN lookup with validation | Done |
-| CMS Provider Data Catalog API integration | Done |
-| Facility name override (custom text replaces API name) | Done |
-| Manual operational inputs (EMR, Census, Patient Type, Medelite History) | Done |
-| One-click PDF download (clean, print-ready) | Done |
-| Clickable Medicare Care Compare hyperlink in PDF | Done |
-| INFINITE — Managed by MEDELITE branding (static, never overwritten) | Done |
-| Live deployed URL + public repo | Done |
+| Dynamic CCN lookup with validation | ✅ |
+| CMS Provider Data Catalog API integration | ✅ |
+| Facility name override (custom text replaces API name) | ✅ |
+| Manual operational inputs (EMR, Census, Patient Type, Medelite History) | ✅ |
+| One-click PDF download (clean, print-ready) | ✅ |
+| Clickable Medicare Care Compare hyperlink in PDF | ✅ |
+| INFINITE — Managed by MEDELITE branding (static, never overwritten) | ✅ |
+| Live deployed URL + public repo | ✅ |
 
 ### Bonus Features (All Implemented)
 
 | Feature | Status |
 |---|---|
-| All 12 hospitalization/ED metrics (STR + LT with state and national averages) | Done |
-| Word document (.docx) export | Done |
-| Interactive bar charts comparing facility vs. national vs. state metrics | Done |
-| Advanced error handling (validation, API failures, error boundary, graceful degradation) | Done |
+| All 12 hospitalization/ED metrics (STR + LT with state and national averages) | ✅ |
+| Word document (.docx) export | ✅ |
+| Interactive bar charts comparing facility vs. national vs. state metrics | ✅ |
+| Advanced error handling (validation, API failures, error boundary, graceful degradation) | ✅ |
 
 ---
 
 ## Architecture
 
-    src/
-    ├── api/
-    │   └── cmsApi.ts           # CMS Provider Data Catalog API service
-    ├── components/
-    │   ├── Header.tsx           # INFINITE / MEDELITE branding
-    │   ├── CCNSearch.tsx         # CCN input with validation
-    │   ├── ManualInputs.tsx      # Operational fields form
-    │   ├── FacilityReport.tsx    # Full data display
-    │   ├── StarRating.tsx        # Visual 1-5 star cards
-    │   ├── MetricsChart.tsx      # Recharts bar charts (bonus)
-    │   └── ErrorBoundary.tsx     # React error boundary (bonus)
-    ├── utils/
-    │   ├── pdfGenerator.ts       # jsPDF report builder
-    │   ├── docxGenerator.ts      # docx Word builder (bonus)
-    │   └── dataMapper.ts         # CMS → report field mapper
-    ├── types/
-    │   └── facility.ts           # TypeScript interfaces
-    ├── App.tsx                    # Main application shell
-    ├── main.tsx                   # Entry point
-    └── index.css                  # Tailwind + global styles
+### Project Structure
+
+| Directory | File | Purpose |
+|---|---|---|
+| src/api/ | cmsApi.ts | CMS Provider Data Catalog API service |
+| src/components/ | Header.tsx | INFINITE / MEDELITE branding |
+| | CCNSearch.tsx | CCN input with validation |
+| | ManualInputs.tsx | Operational fields form |
+| | FacilityReport.tsx | Full data display |
+| | StarRating.tsx | Visual 1–5 star cards |
+| | MetricsChart.tsx | Recharts bar charts (bonus) |
+| | ErrorBoundary.tsx | React error boundary (bonus) |
+| src/utils/ | pdfGenerator.ts | jsPDF report builder |
+| | docxGenerator.ts | docx Word builder (bonus) |
+| | dataMapper.ts | CMS field mapping and formatting |
+| src/types/ | facility.ts | TypeScript interfaces |
+| src/ | App.tsx | Main application shell |
 
 ### Data Flow
 
-    User enters CCN
-           │
-           ▼
-    ┌──────────────────────────────────┐
-    │  CMS Provider Data Catalog API   │
-    │  (data.cms.gov DKAN endpoint)    │
-    └──────────┬───────────────────────┘
-               │
-         ┌─────┴──────┐
-         │             │
-         ▼             ▼
-    Provider Info   Claims QMs + State Averages
-    (star ratings,  (12 hospitalization/ED metrics
-     beds, address)  with national & state benchmarks)
-         │             │
-         └─────┬───────┘
-               │
-               ▼
-      dataMapper.ts builds report rows
-               │
-         ┌─────┴──────┐
-         │             │
-         ▼             ▼
-      pdfGenerator   docxGenerator
-               │             │
-               ▼             ▼
-          .pdf download  .docx download
+```mermaid
+flowchart TD
+    A[User enters CCN] --> B[CMS Provider Data Catalog API]
+    B --> C[Provider Info\nStar ratings, beds, address]
+    B --> D[Claims QMs + State Averages\n12 hospitalization/ED metrics]
+    C --> E[dataMapper.ts\nBuilds report rows]
+    D --> E
+    E --> F[pdfGenerator\njsPDF + AutoTable]
+    E --> G[docxGenerator\ndocx npm package]
+    F --> H[.pdf download]
+    G --> I[.docx download]
+```
 
 ### API Integration Strategy
 
@@ -148,23 +130,27 @@ Node.js 18+ and npm 9+
 
 ### Install and Run
 
-    git clone https://github.com/prasad0411/facility-assessment-generator.git
-    cd facility-assessment-generator
-    npm install
-    npm run dev
+```bash
+git clone https://github.com/prasad0411/facility-assessment-generator.git
+cd facility-assessment-generator
+npm install
+npm run dev
+```
 
 Open http://localhost:5173 and test with CCN 686123.
 
 ### Build and Deploy
 
-    npm run build
-    npx netlify-cli deploy --prod --dir=dist
+```bash
+npm run build
+npx netlify-cli deploy --prod --dir=dist
+```
 
 ---
 
 ## Test Verification
 
-Use CCN 686123 to verify against Kendall Lakes Healthcare and Rehab Center:
+Use CCN **686123** to verify against **Kendall Lakes Healthcare and Rehab Center**:
 
 | Field | Expected Source |
 |---|---|
@@ -175,7 +161,7 @@ Use CCN 686123 to verify against Kendall Lakes Healthcare and Rehab Center:
 | STR/LT Metrics | Claims measures 521, 522, 551, 552 with state/national benchmarks |
 | Medicare Link | https://www.medicare.gov/care-compare/details/nursing-home/686123 |
 
-**Note:** Star ratings and metrics reflect current live CMS data, which is updated quarterly. Values may differ from older reference snapshots — this is expected and correct behavior.
+> **Note:** Star ratings and metrics reflect **current live CMS data**, which is updated quarterly. Values may differ from older reference snapshots — this is expected and correct behavior.
 
 ---
 
