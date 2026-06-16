@@ -1,0 +1,5 @@
+[[redirects]]
+  from = "/cms-api/*"
+  to = "https://data.cms.gov/provider-data/api/1/:splat"
+  status = 200
+  force = true
